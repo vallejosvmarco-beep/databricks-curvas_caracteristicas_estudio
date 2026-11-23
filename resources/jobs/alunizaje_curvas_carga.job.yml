@@ -1,0 +1,28 @@
+resources:
+  jobs:
+
+    alunizaje_curvas_carga_actualizar:
+
+      name: alunizaje_curvas_carga_actualizar
+
+      tasks:
+
+        # Refresca el pipeline all-NISEs (muestra o masa segun
+        # muestra_por_categoria) y valida el embudo esperado:
+        # 396 -> 347 -> 342 (muestra de 2 por categoria, 13-11-2026)
+        - task_key: refrescar_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.alunizaje_curvas_carga.id}
+
+        - task_key: validar_embudo
+          depends_on:
+            - task_key: refrescar_pipeline
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../sql/validar_embudo_curvas_all.sql
+
+      # Para programarlo diario a las 6am (America/Costa_Rica):
+      # schedule:
+      #   quartz_cron_expression: "0 0 6 * * ?"
+      #   timezone_id: America/Costa_Rica

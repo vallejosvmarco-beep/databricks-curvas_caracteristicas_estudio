@@ -1,0 +1,53 @@
+resources:
+  pipelines:
+
+    alunizaje_curvas_carga:
+
+      name: TMT_TMTB_Alunizaje_Curvas_Carga
+
+      catalog: ${var.catalog}
+      schema: ${var.schema_alunizaje}
+
+      serverless: true
+      continuous: false
+
+      configuration:
+
+        project.source_catalog: ${var.catalog}
+
+        # Schema destino del pipeline: el modulo factores_gspgcf lo usa
+        # para leer la decision metodologica congelada de FASE 3
+        # (curvas_patron_metodologia_ganadora) en el mismo schema.
+        project.schema_alunizaje: ${var.schema_alunizaje}
+
+        project.source_schema_carga: ${var.schema_bronce}
+        project.source_schema_infoclientes: ${var.schema_infoclientes}
+        project.source_table_infoclientes: ${var.tabla_infoclientes}
+        project.source_schema_diferencias: ${var.schema_analisis}
+        project.source_table_diferencias: plata_carga_diferencias
+
+        project.periodo_inicio: "2026-02-01"
+        project.periodo_fin: ${var.periodo_fin}
+
+        # 2 = muestra estratificada (2 clientes por categoria tipo_curva).
+        # 999999 = toda la masa de NISEs con AMI (requiere Full Refresh).
+        project.muestra_por_categoria: ${var.muestra_por_categoria}
+
+        # Raiz de los 7 .dbf oficiales SIGEL/INFOCLIENTES (infoclientes_sigel.py)
+        project.path_infoclientes_dbf: /Volumes/workspace/alunizaje/datos_oficiales/infoclientes
+
+        # Raiz PME parquet mensuales y exportaciones (cruces_pme_v2.py)
+        project.path_pme_root: /Volumes/workspace/alunizaje/datos_crudos/PME
+        project.path_exportaciones: /Volumes/workspace/alunizaje/datos_oficiales/exportaciones
+
+      libraries:
+        - file:
+            path: ../../src/alunizaje_curvas_carga/plata_950_all.py
+        - file:
+            path: ../../src/alunizaje_curvas_carga/curvas_patron.py
+        - file:
+            path: ../../src/alunizaje_curvas_carga/factores_gspgcf.py
+        - file:
+            path: ../../src/alunizaje_curvas_carga/infoclientes_sigel.py
+        - file:
+            path: ../../src/alunizaje_curvas_carga/cruces_pme_v2.py
